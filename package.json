@@ -10,6 +10,7 @@
     "start": "node index.js",
     "build": "cd client && npm install && npm run build",
     "dev": "concurrently \"node index.js\" \"cd client && npm run dev\"",
+    "migrate": "node src/migrate.js",
     "install:all": "npm install && cd client && npm install"
   },
   "dependencies": {
