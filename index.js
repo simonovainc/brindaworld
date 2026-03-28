@@ -3,7 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const db = require('./src/db');
-const apiRoutes = require('./src/routes/api');
+const apiRoutes  = require('./src/routes/api');
+const authRoutes = require('./src/routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -21,6 +22,7 @@ app.use(express.static(path.join(__dirname, 'client/dist')));
 
 // API routes
 app.use('/api', apiRoutes);
+app.use('/api/auth', authRoutes);
 
 // React client-side routing — must be after API routes
 app.get('*', (req, res) => {
