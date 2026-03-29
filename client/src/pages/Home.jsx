@@ -21,12 +21,12 @@ const C = {
 };
 
 const CATEGORIES = [
-  { emoji: '♟️', label: 'Chess',      bg: '#FFF3CD', id: 'chess'      },
+  { emoji: '♛', label: 'Chess',      bg: '#FFF3CD', id: 'chess'      },
   { emoji: '💻', label: 'Coding',     bg: '#D1ECF1', id: 'coding'     },
   { emoji: '🌍', label: 'Geography',  bg: '#D4EDDA', id: 'geography'  },
-  { emoji: '💗', label: 'Wellness',   bg: '#F8D7DA', id: 'wellness'   },
+  { emoji: '🌸', label: 'Wellness',   bg: '#F8D7DA', id: 'wellness'   },
   { emoji: '🎨', label: 'Creativity', bg: '#E2D9F3', id: 'creativity' },
-  { emoji: '👑', label: 'Leadership', bg: '#FFF3E0', id: 'leadership' },
+  { emoji: '🏛️', label: 'Leadership', bg: '#FFF3E0', id: 'leadership' },
 ];
 
 const PROFESSIONS = [
@@ -36,14 +36,14 @@ const PROFESSIONS = [
     quiz: ['What does a judge do?', 'What is a courtroom?', 'What is fairness?'],
   },
   {
-    emoji: '📜', title: 'Lawyer', category: 'Justice',
-    roleModel: 'Inspired by Amal Clooney, International Human Rights Lawyer',
-    quiz: ['What does a lawyer do?', 'What is a law?', 'How do courts work?'],
+    emoji: '🎖️', title: 'Military Officer / Defence Forces', category: 'Leadership',
+    roleModel: 'Inspired by General Jennie Carignan, Chief of Defence Staff, Canadian Armed Forces',
+    quiz: ['What does the military do to protect a country?', 'What does a general command?', 'What is the difference between army, navy and air force?'],
   },
   {
-    emoji: '🏛️', title: 'Parliamentarian', category: 'Leadership',
-    roleModel: 'Inspired by Michaëlle Jean, Governor General of Canada',
-    quiz: ['What is parliament?', 'Who makes the laws?', 'What is voting?'],
+    emoji: '🏛️', title: 'Member of Parliament / Senator', category: 'Leadership',
+    roleModel: 'Inspired by the Rt. Hon. Kim Campbell, First Female Prime Minister of Canada',
+    quiz: ['What is Parliament?', 'How do you become an MP?', 'What does the Prime Minister do?'],
   },
   {
     emoji: '🩺', title: 'Doctor', category: 'Health',
@@ -71,7 +71,7 @@ const PROFESSIONS = [
     quiz: ['How do you write a story?', 'What is a novel?', 'What is fiction?'],
   },
   {
-    emoji: '🏢', title: 'CEO / Entrepreneur', category: 'Business',
+    emoji: '🚀', title: 'CEO / Entrepreneur', category: 'Business',
     roleModel: 'Inspired by Oprah Winfrey, Entrepreneur & Media CEO',
     quiz: ['What is a business?', 'What is profit?', 'What does a CEO do?'],
   },
@@ -81,7 +81,7 @@ const PROFESSIONS = [
     quiz: ['Why is school important?', 'What does a professor teach?', 'What is a university?'],
   },
   {
-    emoji: '🌍', title: 'Diplomat / Ambassador', category: 'Leadership',
+    emoji: '🕊️', title: 'Diplomat / Ambassador', category: 'Leadership',
     roleModel: 'Inspired by Louise Arbour, UN High Commissioner',
     quiz: ['What is a country?', 'What is an ambassador?', 'What is the United Nations?'],
   },
@@ -231,7 +231,7 @@ function Home() {
               padding: '2rem', backdropFilter: 'blur(8px)',
               border: '1px solid rgba(255,255,255,0.15)',
             }}>
-              {['♟️','💻','🌍','👑','🎨','💪','🏆','📚','🌟'].map((e, i) => (
+              {['♛','💻','🌍','👑','🎨','💪','🏆','📚','🌟'].map((e, i) => (
                 <div key={i} style={{
                   fontSize: '3.5rem', display: 'flex',
                   alignItems: 'center', justifyContent: 'center',

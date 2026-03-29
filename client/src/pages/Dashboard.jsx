@@ -93,6 +93,22 @@ function Dashboard() {
   const { user, children: authChildren, loading: authLoading, logout, addChild, removeChild } = useAuth();
   const navigate = useNavigate();
 
+  // ── Toast notification ──
+  const [toast, setToast] = useState('');
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 3000);
+  };
+
+  const handlePlayNow = () => {
+    if (window !== window.parent) {
+      window.top.location.href = 'https://brindaworld.ca';
+    } else {
+      navigate('/');
+    }
+  };
+
   // ── KPI data (Session C) ──
   const [summary,        setSummary]        = useState(null);
   const [weeklyActivity, setWeeklyActivity] = useState(null);
@@ -461,8 +477,31 @@ function Dashboard() {
                     {child.lastActive ? `Last active: ${fmtLastActive(child.lastActive)}` : 'No activity yet — let\'s play! 🎮'}
                   </div>
 
-                  <button style={{ ...btnPrimary(false), padding: '0.42rem 0', width: '100%', borderRadius: 8, marginBottom: '0.45rem' }}>
+                  <button
+                    onClick={handlePlayNow}
+                    style={{
+                      ...btnPrimary(false),
+                      padding: '0.42rem 0', width: '100%', borderRadius: 8,
+                      marginBottom: '0.4rem', transition: 'transform 0.15s, filter 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.filter = 'brightness(0.9)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)';    e.currentTarget.style.filter = 'brightness(1)';   }}
+                  >
                     Play Now 🎮
+                  </button>
+                  <button
+                    onClick={() => showToast('Progress reports coming soon! 🚀')}
+                    style={{
+                      background: 'transparent', color: T.primary,
+                      border: `1.5px solid ${T.primary}`, borderRadius: 8,
+                      padding: '0.35rem 0', cursor: 'pointer',
+                      fontSize: '0.78rem', fontWeight: 700, width: '100%',
+                      marginBottom: '0.4rem', transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#fff0f5'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    View Progress 📊
                   </button>
                   <button onClick={() => setConfirmDelete(child)} style={{
                     background: 'transparent', color: T.light, border: `1px solid ${T.border}`,
@@ -513,6 +552,21 @@ function Dashboard() {
         </div>
 
       </main>
+
+      {/* ════ TOAST ════ */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: '1.5rem', right: '1.5rem',
+          background: T.text, color: 'white',
+          borderRadius: 12, padding: '0.85rem 1.3rem',
+          fontSize: '0.9rem', fontWeight: 600,
+          boxShadow: '0 6px 24px rgba(0,0,0,0.22)',
+          zIndex: 1000, animation: 'fadeInUp 0.25s ease',
+        }}>
+          {toast}
+        </div>
+      )}
+      <style>{`@keyframes fadeInUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }`}</style>
 
       {/* ════ DELETE MODAL ════ */}
       {confirmDelete && (

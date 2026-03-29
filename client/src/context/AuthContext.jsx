@@ -55,9 +55,16 @@ export function AuthProvider({ children: jsx }) {
   };
 
   const login = async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password });
-    persist(data.user, data.session);
-    return data;
+    try {
+      const { data } = await api.post('/auth/login', { email, password });
+      persist(data.user, data.session);
+      return data;
+    } catch (err) {
+      // Re-throw as a plain Error so Login.jsx can display err.message directly.
+      // The backend already returns a user-friendly message in err.response.data.error.
+      const message = err.response?.data?.error || 'Sign in failed. Please try again.';
+      throw new Error(message);
+    }
   };
 
   const logout = async () => {

@@ -172,20 +172,37 @@ router.post('/login', async (req, res) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      return res.status(401).json({ error: error.message });
+      const code = error?.code || '';
+      const msg  = (error?.message || '').toLowerCase();
+
+      if (code === 'invalid_credentials' || msg.includes('invalid login') || msg.includes('invalid credentials')) {
+        // Supabase returns the same code for wrong password and unknown email.
+        // We probe MySQL to distinguish the two cases.
+        const [emailRows] = await pool.query(
+          'SELECT id FROM users WHERE email = ? AND deleted_at IS NULL LIMIT 1',
+          [email]
+        ).catch(() => [[]]);
+
+        if (!emailRows.length) {
+          return res.status(401).json({ error: 'No account found with this email. Please register.' });
+        }
+        return res.status(401).json({ error: 'Incorrect password. Please try again.' });
+      }
+
+      if (code === 'email_not_confirmed' || msg.includes('email not confirmed') || msg.includes('not verified')) {
+        return res.status(401).json({
+          error: 'Please verify your email before signing in. Check your inbox for the confirmation link.',
+        });
+      }
+
+      return res.status(401).json({ error: 'Sign in failed. Please try again.' });
     }
 
     const supaUser = data.user;
     const session  = data.session;
 
-    // 2. Update last_login_at in MySQL
-    await pool.query(
-      'UPDATE users SET last_login_at = NOW() WHERE supabase_id = ?',
-      [supaUser.id]
-    );
-
-    // 3. Fetch MySQL user record
-    const [rows] = await pool.query(
+    // 2. Fetch MySQL user record
+    let [rows] = await pool.query(
       `SELECT id, email, role, first_name, last_name
        FROM users
        WHERE supabase_id = ? AND deleted_at IS NULL
@@ -193,9 +210,31 @@ router.post('/login', async (req, res) => {
       [supaUser.id]
     );
 
+    // 3. Auto-recover: Supabase user exists but MySQL row is missing
+    //    (can happen after a partial registration). Insert silently.
     if (!rows.length) {
-      return res.status(401).json({ error: 'User not found in database' });
+      console.log('[login] MySQL user missing for supabase_id', supaUser.id, '— auto-inserting');
+      const meta      = supaUser.user_metadata || {};
+      const firstName = meta.first_name || meta.firstName || '';
+      const lastName  = meta.last_name  || meta.lastName  || '';
+      await pool.query(
+        `INSERT INTO users (supabase_id, email, first_name, last_name, role)
+         VALUES (?, ?, ?, ?, 'parent')
+         ON DUPLICATE KEY UPDATE last_login_at = NOW()`,
+        [supaUser.id, supaUser.email, firstName, lastName]
+      );
+      const [recovered] = await pool.query(
+        'SELECT id, email, role, first_name, last_name FROM users WHERE supabase_id = ? LIMIT 1',
+        [supaUser.id]
+      );
+      rows = recovered;
     }
+
+    // 4. Update last_login_at
+    await pool.query(
+      'UPDATE users SET last_login_at = NOW() WHERE supabase_id = ?',
+      [supaUser.id]
+    );
 
     const u = rows[0];
     res.json({
@@ -210,7 +249,7 @@ router.post('/login', async (req, res) => {
     });
   } catch (err) {
     console.error('[login]', err.message);
-    res.status(500).json({ error: 'Login failed' });
+    res.status(500).json({ error: 'Sign in failed. Please try again.' });
   }
 });
 
