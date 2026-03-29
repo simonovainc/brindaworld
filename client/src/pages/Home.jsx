@@ -1,6 +1,6 @@
 /**
  * Home.jsx — BrindaWorld Homepage
- * Sections: Hero · Categories · SheCanBe · BrindaFavorites · Testimonials · Email · Footer
+ * Sections: Hero · Categories · CategorySections · SheCanBe · BrindaFavorites · Testimonials · Email · Footer
  * Fully responsive. Pure inline styles — no CSS library required.
  */
 
@@ -10,24 +10,69 @@ import api from '../api';
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
-  heroGrad:   'linear-gradient(135deg, #2D0022 0%, #6B0057 50%, #9C27B0 100%)',
-  pink:       '#FF1493',
-  purple:     '#6B0057',
-  darkPurple: '#2D1B69',
-  lightPurple:'#F8F0FF',
-  dark:       '#1A0014',
-  white:      '#FFFFFF',
-  grey:       '#666',
-  lightGrey:  '#f5f5f5',
+  heroGrad:    'linear-gradient(135deg, #2D0022 0%, #6B0057 50%, #9C27B0 100%)',
+  pink:        '#FF1493',
+  purple:      '#6B0057',
+  darkPurple:  '#2D1B69',
+  lightPurple: '#F8F0FF',
+  dark:        '#1A0014',
+  white:       '#FFFFFF',
+  grey:        '#666',
+  lightGrey:   '#f5f5f5',
 };
 
 const CATEGORIES = [
-  { emoji: '♛', label: 'Chess',      bg: '#FFF3CD', id: 'chess'      },
+  { emoji: '♛',  label: 'Chess',      bg: '#FFF3CD', id: 'chess'      },
   { emoji: '💻', label: 'Coding',     bg: '#D1ECF1', id: 'coding'     },
   { emoji: '🌍', label: 'Geography',  bg: '#D4EDDA', id: 'geography'  },
   { emoji: '🌸', label: 'Wellness',   bg: '#F8D7DA', id: 'wellness'   },
   { emoji: '🎨', label: 'Creativity', bg: '#E2D9F3', id: 'creativity' },
   { emoji: '🏛️', label: 'Leadership', bg: '#FFF3E0', id: 'leadership' },
+];
+
+// Each category gets its own page section with game cards.
+// url: null → Coming Soon card (greyed, not clickable)
+// url: string → opens on brindaworld.ca in new tab
+const CATEGORY_SECTIONS = [
+  {
+    id: 'chess-section', catId: 'chess', label: 'Chess', emoji: '♛', bg: '#FFFBEC',
+    games: [
+      { emoji: '♛', title: 'Chess Beginner',     desc: 'Learn the pieces and your first moves',  url: null },
+      { emoji: '♟', title: 'Chess Intermediate',  desc: 'Tactics, forks and checkmate patterns',  url: null },
+    ],
+  },
+  {
+    id: 'coding-section', catId: 'coding', label: 'Coding', emoji: '💻', bg: '#EAF7FA',
+    games: [
+      { emoji: '🧩', title: 'Coding Puzzle', desc: 'Solve logic puzzles with block code',   url: null },
+      { emoji: '🌐', title: 'HTML Basics',   desc: 'Build your first webpage step by step',  url: null },
+    ],
+  },
+  {
+    id: 'geography-section', catId: 'geography', label: 'Geography', emoji: '🌍', bg: '#EAF5EE',
+    games: [
+      { emoji: '🗺️', title: 'World Map Quiz', desc: 'Drag countries to the correct places', url: null },
+      { emoji: '🚩', title: 'Flag Game',       desc: 'Match flags to their countries',       url: null },
+    ],
+  },
+  {
+    id: 'wellness-section', catId: 'wellness', label: 'Wellness', emoji: '🌸', bg: '#FEF0F2',
+    games: [
+      { emoji: '😊', title: 'Mood Tracker',   desc: 'Check in with how you feel today',   url: null },
+      { emoji: '💨', title: 'Breathing Game', desc: 'Calm your mind with guided breaths', url: null },
+    ],
+  },
+  {
+    id: 'creativity-section', catId: 'creativity', label: 'Creativity', emoji: '🎨', bg: '#F0EBF9',
+    games: [
+      { emoji: '💅', title: 'Nail Art Studio', desc: 'Design and paint the perfect nails', url: 'https://brindaworld.ca/nail-art-studio.html' },
+      { emoji: '🧁', title: 'Baking Kitchen',  desc: 'Bake and decorate delicious treats', url: 'https://brindaworld.ca/baking-kitchen.html'  },
+    ],
+  },
+  {
+    id: 'leadership-section', catId: 'leadership', label: 'Leadership', emoji: '🏛️', bg: '#FFF8EE',
+    games: null, // special — shows She Can Be teaser cards linking to #she-can-be
+  },
 ];
 
 const PROFESSIONS = [
@@ -93,10 +138,11 @@ const PROFESSIONS = [
   },
 ];
 
+// Brinda's Favourites — link to real games on brindaworld.ca, open in new tab
 const GAMES = [
-  { emoji: '💅', title: 'Nail Art Studio',    desc: 'Design and paint the perfect nails',          id: 'nail-art'    },
-  { emoji: '🧁', title: 'Baking Kitchen',     desc: 'Bake and decorate delicious treats',          id: 'baking'      },
-  { emoji: '💇', title: 'Glam Hair Salon',    desc: 'Style hair and create amazing looks',         id: 'hair-salon'  },
+  { emoji: '💅', title: 'Nail Art Studio', desc: 'Design and paint the perfect nails',  url: 'https://brindaworld.ca/nail-art-studio.html' },
+  { emoji: '🧁', title: 'Baking Kitchen',  desc: 'Bake and decorate delicious treats',  url: 'https://brindaworld.ca/baking-kitchen.html'  },
+  { emoji: '💇', title: 'Glam Hair Salon', desc: 'Style hair and create amazing looks', url: 'https://brindaworld.ca/glam-hair-salon.html'  },
 ];
 
 const TESTIMONIALS = [
@@ -115,47 +161,67 @@ const TESTIMONIALS = [
 ];
 
 // ── Responsive helpers via CSS-in-JS media queries ────────────────────────────
-// We inject a single <style> block for pseudo-classes and media queries.
 const GLOBAL_STYLES = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', Arial, sans-serif; }
   a { text-decoration: none; color: inherit; }
 
-  .cat-card:hover { transform: scale(1.07) !important; box-shadow: 0 8px 28px rgba(0,0,0,0.15) !important; }
+  .cat-card:hover  { transform: scale(1.07) !important; box-shadow: 0 8px 28px rgba(0,0,0,0.15) !important; }
   .prof-card:hover { border: 2px solid #FF1493 !important; }
-  .cta-primary:hover { background: #cc0070 !important; transform: translateY(-2px); }
+  .cta-primary:hover   { background: #cc0070 !important; transform: translateY(-2px); }
   .cta-secondary:hover { background: rgba(255,255,255,0.15) !important; transform: translateY(-2px); }
-  .game-card:hover { transform: translateY(-4px); box-shadow: 0 10px 32px rgba(214,51,132,0.18) !important; }
-  .footer-link:hover { color: #FF1493 !important; }
-  .nav-link:hover { color: #FF1493 !important; }
+  .game-card:hover     { transform: translateY(-4px); box-shadow: 0 10px 32px rgba(214,51,132,0.18) !important; }
+  .cat-game-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.13) !important; }
+  .footer-link:hover   { color: #FF1493 !important; }
+  .nav-link:hover      { color: #FF1493 !important; }
 
   @media (max-width: 768px) {
-    .hero-inner { flex-direction: column !important; }
-    .hero-left  { width: 100% !important; text-align: center !important; }
-    .hero-right { width: 100% !important; justify-content: center !important; margin-top: 2rem; }
-    .hero-h1    { font-size: 2.4rem !important; }
-    .hero-ctas  { justify-content: center !important; }
-    .trust-bar  { justify-content: center !important; flex-wrap: wrap !important; gap: 0.75rem !important; }
-    .cat-strip  { justify-content: flex-start !important; overflow-x: auto !important; padding-bottom: 1rem; }
-    .prof-grid  { grid-template-columns: repeat(2, 1fr) !important; }
-    .game-grid  { grid-template-columns: 1fr !important; }
-    .test-grid  { flex-direction: column !important; }
-    .footer-cols{ flex-direction: column !important; gap: 2rem !important; }
+    .hero-inner  { flex-direction: column !important; }
+    .hero-left   { width: 100% !important; text-align: center !important; }
+    .hero-right  { width: 100% !important; justify-content: center !important; margin-top: 2rem; }
+    .hero-h1     { font-size: 2.4rem !important; }
+    .hero-ctas   { justify-content: center !important; }
+    .trust-bar   { justify-content: center !important; flex-wrap: wrap !important; gap: 0.75rem !important; }
+    .cat-strip   { justify-content: flex-start !important; overflow-x: auto !important; padding-bottom: 1rem; -webkit-overflow-scrolling: touch; }
+    .prof-grid   { grid-template-columns: repeat(2, 1fr) !important; }
+    .game-grid   { grid-template-columns: 1fr !important; }
+    .cat-game-grid { grid-template-columns: 1fr !important; }
+    .test-grid   { flex-direction: column !important; }
+    .footer-cols { flex-direction: column !important; gap: 2rem !important; }
   }
   @media (max-width: 480px) {
-    .prof-grid  { grid-template-columns: 1fr !important; }
-    .hero-h1    { font-size: 2rem !important; }
+    .prof-grid { grid-template-columns: 1fr !important; }
+    .hero-h1   { font-size: 2rem !important; }
+    .cat-strip { gap: 0.75rem !important; }
   }
 `;
 
 // ── Component ─────────────────────────────────────────────────────────────────
 function Home() {
-  const sheCanBeRef = useRef(null);
-  const [apiDown,       setApiDown]       = useState(false);
-  const [emailVal,      setEmailVal]      = useState('');
-  const [emailLoading,  setEmailLoading]  = useState(false);
-  const [emailDone,     setEmailDone]     = useState('');   // success message
-  const [emailError,    setEmailError]    = useState('');
+  // Section refs
+  const sheCanBeRef    = useRef(null);
+  const chessRef       = useRef(null);
+  const codingRef      = useRef(null);
+  const geographyRef   = useRef(null);
+  const wellnessRef    = useRef(null);
+  const creativityRef  = useRef(null);
+  const leadershipRef  = useRef(null);
+
+  // Map category id → ref
+  const catRefMap = {
+    chess:      chessRef,
+    coding:     codingRef,
+    geography:  geographyRef,
+    wellness:   wellnessRef,
+    creativity: creativityRef,
+    leadership: leadershipRef,
+  };
+
+  const [apiDown,      setApiDown]      = useState(false);
+  const [emailVal,     setEmailVal]     = useState('');
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailDone,    setEmailDone]    = useState('');
+  const [emailError,   setEmailError]   = useState('');
 
   // Probe health endpoint once on mount — used to show offline badge
   useEffect(() => {
@@ -163,6 +229,8 @@ function Home() {
       .then(res => setApiDown(res.data?.status !== 'ok'))
       .catch(() => setApiDown(true));
   }, []);
+
+  const scrollTo = (ref) => ref?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -186,8 +254,6 @@ function Home() {
       setEmailLoading(false);
     }
   };
-
-  const scrollTo = (ref) => ref?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
     <>
@@ -227,7 +293,7 @@ function Home() {
               Chess · Coding · Geography · Confidence · Leadership
             </p>
 
-            {/* CTAs */}
+            {/* CTAs — use react-router Link for internal navigation */}
             <div className="hero-ctas" style={{ display: 'flex', gap: '1rem', marginBottom: '2.25rem', flexWrap: 'wrap' }}>
               <Link to="/register">
                 <button className="cta-primary" style={{
@@ -285,20 +351,29 @@ function Home() {
 
       {/* ══════════════════════════════════════════════════════════════
           SECTION 2 — CATEGORY STRIP
+          Each card scrolls to its own dedicated section below.
           ══════════════════════════════════════════════════════════════ */}
-      <section style={{ background: C.white, padding: '60px 1.5rem' }}>
+      <section style={{ background: C.white, padding: '60px 1.5rem 40px' }}>
         <h2 style={{ textAlign: 'center', color: C.darkPurple, fontSize: '2rem', fontWeight: 800, marginBottom: '2.5rem' }}>
           Explore by Category
         </h2>
-        <div className="cat-strip" style={{
-          display: 'flex', gap: '1.25rem', justifyContent: 'center',
-          flexWrap: 'nowrap', maxWidth: 1100, margin: '0 auto',
-        }}>
+        <div
+          className="cat-strip"
+          style={{
+            display: 'flex', gap: '1.25rem', justifyContent: 'center',
+            flexWrap: 'nowrap', maxWidth: 1100, margin: '0 auto',
+            overflowX: 'auto', paddingBottom: '0.5rem',
+          }}
+        >
           {CATEGORIES.map(cat => (
             <div
               key={cat.id}
               className="cat-card"
-              onClick={() => scrollTo(sheCanBeRef)}
+              onClick={() => scrollTo(catRefMap[cat.id])}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && scrollTo(catRefMap[cat.id])}
+              aria-label={`Explore ${cat.label}`}
               style={{
                 width: 160, minWidth: 140, height: 160,
                 background: cat.bg, borderRadius: 20,
@@ -307,6 +382,7 @@ function Home() {
                 gap: '0.6rem', cursor: 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
                 boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+                flexShrink: 0,
               }}
             >
               <span style={{ fontSize: '3rem' }}>{cat.emoji}</span>
@@ -317,9 +393,116 @@ function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
+          CATEGORY SECTIONS — one per category, each with its own anchor
+          ══════════════════════════════════════════════════════════════ */}
+      {CATEGORY_SECTIONS.map((section) => {
+        // Pick the correct ref
+        const sectionRef = catRefMap[section.catId];
+
+        return (
+          <section
+            key={section.id}
+            id={section.id}
+            ref={sectionRef}
+            style={{ background: section.bg, padding: '48px 1.5rem', borderTop: '1px solid rgba(0,0,0,0.04)' }}
+          >
+            <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+              {/* Section heading */}
+              <h3 style={{
+                color: C.darkPurple, fontSize: '1.5rem', fontWeight: 800,
+                marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
+              }}>
+                <span>{section.emoji}</span> {section.label}
+              </h3>
+
+              {/* Leadership section — teaser that scrolls to She Can Be */}
+              {section.games === null ? (
+                <div>
+                  <p style={{ color: C.grey, marginBottom: '1.25rem', fontSize: '0.95rem' }}>
+                    Discover inspiring women leaders and the careers they shaped.
+                  </p>
+                  <div className="cat-game-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.25rem', maxWidth: 600 }}>
+                    {[
+                      { emoji: '👑', title: 'She Can Be a Leader', desc: 'Explore 12 inspiring career paths' },
+                      { emoji: '🏛️', title: 'She Can Be a Diplomat', desc: 'Discover the world of global leadership' },
+                    ].map(card => (
+                      <div
+                        key={card.title}
+                        className="cat-game-card"
+                        onClick={() => scrollTo(sheCanBeRef)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={e => e.key === 'Enter' && scrollTo(sheCanBeRef)}
+                        style={{
+                          background: C.white, borderRadius: 16,
+                          padding: '1.4rem 1.2rem', cursor: 'pointer',
+                          boxShadow: '0 3px 14px rgba(0,0,0,0.09)',
+                          transition: 'all 0.22s',
+                          border: '1.5px solid rgba(0,0,0,0.05)',
+                        }}
+                      >
+                        <div style={{ fontSize: '2.2rem', marginBottom: '0.5rem' }}>{card.emoji}</div>
+                        <div style={{ color: C.darkPurple, fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.3rem' }}>{card.title}</div>
+                        <div style={{ color: C.grey, fontSize: '0.82rem' }}>{card.desc}</div>
+                        <div style={{ color: C.pink, fontSize: '0.8rem', fontWeight: 600, marginTop: '0.6rem' }}>Explore below ↓</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                /* Regular game cards */
+                <div className="cat-game-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.25rem', maxWidth: 600 }}>
+                  {section.games.map(game => {
+                    const isComingSoon = !game.url;
+                    const cardStyle = {
+                      background: C.white, borderRadius: 16,
+                      padding: '1.4rem 1.2rem',
+                      boxShadow: '0 3px 14px rgba(0,0,0,0.09)',
+                      border: '1.5px solid rgba(0,0,0,0.05)',
+                      opacity: isComingSoon ? 0.65 : 1,
+                      transition: isComingSoon ? 'none' : 'all 0.22s',
+                      cursor: isComingSoon ? 'default' : 'pointer',
+                    };
+                    return isComingSoon ? (
+                      <div key={game.title} style={cardStyle}>
+                        <div style={{ fontSize: '2.2rem', marginBottom: '0.5rem' }}>{game.emoji}</div>
+                        <div style={{ color: C.darkPurple, fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.3rem' }}>{game.title}</div>
+                        <div style={{ color: C.grey, fontSize: '0.82rem', marginBottom: '0.5rem' }}>{game.desc}</div>
+                        <span style={{
+                          display: 'inline-block', background: '#e0e0e0', color: '#888',
+                          borderRadius: 50, padding: '0.2rem 0.75rem',
+                          fontSize: '0.75rem', fontWeight: 700,
+                        }}>
+                          Coming Soon 🔒
+                        </span>
+                      </div>
+                    ) : (
+                      <a
+                        key={game.title}
+                        href={game.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cat-game-card"
+                        style={{ ...cardStyle, textDecoration: 'none' }}
+                      >
+                        <div style={{ fontSize: '2.2rem', marginBottom: '0.5rem' }}>{game.emoji}</div>
+                        <div style={{ color: C.darkPurple, fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.3rem' }}>{game.title}</div>
+                        <div style={{ color: C.grey, fontSize: '0.82rem', marginBottom: '0.5rem' }}>{game.desc}</div>
+                        <span style={{ color: C.pink, fontSize: '0.8rem', fontWeight: 600 }}>Play Now →</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      })}
+
+      {/* ══════════════════════════════════════════════════════════════
           SECTION 3 — SHE CAN BE A LEADER
           ══════════════════════════════════════════════════════════════ */}
-      <section ref={sheCanBeRef} style={{ background: C.lightPurple, padding: '70px 1.5rem' }}>
+      <section id="she-can-be" ref={sheCanBeRef} style={{ background: C.lightPurple, padding: '70px 1.5rem' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <h2 style={{ textAlign: 'center', color: C.darkPurple, fontSize: '2.5rem', fontWeight: 900, marginBottom: '0.6rem' }}>
             She Can Be…
@@ -366,6 +549,7 @@ function Home() {
                   ))}
                 </ul>
 
+                {/* Use Link for internal navigation — NOT <a href> */}
                 <Link to="/register" style={{ marginTop: 'auto' }}>
                   <button style={{
                     background: C.pink, color: C.white, border: 'none',
@@ -383,7 +567,8 @@ function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          SECTION 4 — BRINDA FAVORITES
+          SECTION 4 — BRINDA FAVOURITES
+          Game cards link to brindaworld.ca — open in new tab.
           ══════════════════════════════════════════════════════════════ */}
       <section style={{ background: C.white, padding: '60px 1.5rem' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -393,14 +578,14 @@ function Home() {
             </h2>
             {apiDown && (
               <span style={{
-                display:      'inline-block',
-                background:   '#1e3a5f',
-                color:        'white',
-                borderRadius: 50,
-                padding:      '0.25rem 0.9rem',
-                fontSize:     '0.78rem',
-                fontWeight:   600,
-                letterSpacing:'0.02em',
+                display:       'inline-block',
+                background:    '#1e3a5f',
+                color:         'white',
+                borderRadius:  50,
+                padding:       '0.25rem 0.9rem',
+                fontSize:      '0.78rem',
+                fontWeight:    600,
+                letterSpacing: '0.02em',
               }}>
                 🎮 Playing offline mode — all free games still available
               </span>
@@ -412,7 +597,12 @@ function Home() {
             marginBottom: '1.75rem',
           }}>
             {GAMES.map(game => (
-              <Link to="/register" key={game.id}>
+              <a
+                key={game.url}
+                href={game.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <div className="game-card" style={{
                   background: C.lightPurple, borderRadius: 20,
                   padding: '2rem 1.5rem', textAlign: 'center',
@@ -424,16 +614,22 @@ function Home() {
                   <div style={{ color: C.darkPurple, fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.4rem' }}>
                     {game.title}
                   </div>
-                  <div style={{ color: C.grey, fontSize: '0.88rem' }}>{game.desc}</div>
+                  <div style={{ color: C.grey, fontSize: '0.88rem', marginBottom: '0.6rem' }}>{game.desc}</div>
+                  <div style={{ color: C.pink, fontWeight: 700, fontSize: '0.85rem' }}>Play Now →</div>
                 </div>
-              </Link>
+              </a>
             ))}
           </div>
 
           <div style={{ textAlign: 'right' }}>
-            <Link to="/register" style={{ color: C.pink, fontWeight: 700, fontSize: '0.92rem' }}>
+            <a
+              href="https://brindaworld.ca"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: C.pink, fontWeight: 700, fontSize: '0.92rem' }}
+            >
               See All Games →
-            </Link>
+            </a>
           </div>
         </div>
       </section>
@@ -469,6 +665,7 @@ function Home() {
 
       {/* ══════════════════════════════════════════════════════════════
           SECTION 6 — EMAIL SIGNUP BANNER
+          Posts to /api/leads — NOT directly to Mailchimp.
           ══════════════════════════════════════════════════════════════ */}
       <section style={{ background: C.pink, padding: '60px 1.5rem', textAlign: 'center' }}>
         <h2 style={{ color: C.white, fontSize: '1.9rem', fontWeight: 800, marginBottom: '0.6rem' }}>
@@ -542,33 +739,52 @@ function Home() {
             </p>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick Links — internal routes use Link, external use <a> */}
           <div style={{ flex: 1 }}>
             <h4 style={{ color: C.white, fontWeight: 700, marginBottom: '1rem', fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               Quick Links
             </h4>
-            {[
-              ['Home', '/'], ['Register', '/register'], ['Sign In', '/login'],
-              ['Teachers', '/register'], ['About', '/register'], ['Contact', '/register'],
-            ].map(([label, href]) => (
-              <div key={label} style={{ marginBottom: '0.5rem' }}>
-                <Link to={href} className="footer-link" style={{ fontSize: '0.88rem', transition: 'color 0.15s' }}>
-                  {label}
-                </Link>
-              </div>
-            ))}
+            <div style={{ marginBottom: '0.5rem' }}>
+              <Link to="/" className="footer-link" style={{ fontSize: '0.88rem', transition: 'color 0.15s' }}>Home</Link>
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <Link to="/register" className="footer-link" style={{ fontSize: '0.88rem', transition: 'color 0.15s' }}>Register</Link>
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <Link to="/login" className="footer-link" style={{ fontSize: '0.88rem', transition: 'color 0.15s' }}>Sign In</Link>
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <a href="https://brindaworld.ca/teachers.html" target="_blank" rel="noopener noreferrer" className="footer-link" style={{ fontSize: '0.88rem', transition: 'color 0.15s' }}>Teachers</a>
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <Link to="/about" className="footer-link" style={{ fontSize: '0.88rem', transition: 'color 0.15s' }}>About</Link>
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <Link to="/contact" className="footer-link" style={{ fontSize: '0.88rem', transition: 'color 0.15s' }}>Contact</Link>
+            </div>
           </div>
 
-          {/* Legal */}
+          {/* Legal — all external links to brindaworld.ca legal pages */}
           <div style={{ flex: 1 }}>
             <h4 style={{ color: C.white, fontWeight: 700, marginBottom: '1rem', fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               Legal
             </h4>
-            {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'COPPA Notice'].map(item => (
-              <div key={item} style={{ marginBottom: '0.5rem' }}>
-                <Link to="/register" className="footer-link" style={{ fontSize: '0.88rem', transition: 'color 0.15s' }}>
-                  {item}
-                </Link>
+            {[
+              ['Privacy Policy',    'https://brindaworld.ca/privacy.html'  ],
+              ['Terms of Service',  'https://brindaworld.ca/terms.html'    ],
+              ['Cookie Policy',     'https://brindaworld.ca/cookies.html'  ],
+              ['COPPA Notice',      'https://brindaworld.ca/coppa.html'    ],
+            ].map(([label, href]) => (
+              <div key={label} style={{ marginBottom: '0.5rem' }}>
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-link"
+                  style={{ fontSize: '0.88rem', transition: 'color 0.15s' }}
+                >
+                  {label}
+                </a>
               </div>
             ))}
           </div>
@@ -580,7 +796,7 @@ function Home() {
           paddingTop: '1.25rem', textAlign: 'center',
           fontSize: '0.83rem', color: 'rgba(255,255,255,0.5)',
         }}>
-          © 2025 Simonova Inc. All rights reserved. 🍁 New Brunswick, Canada
+          © 2026 Simonova Inc. All rights reserved. 🍁 New Brunswick, Canada
         </div>
       </footer>
     </>
