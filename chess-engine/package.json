@@ -1,0 +1,29 @@
+{
+  "name": "@simonova/chess-engine",
+  "version": "1.0.0",
+  "description": "Embeddable chess engine — Stockfish WASM + Chessground. Powers BrindaWorld.",
+  "main": "dist/chess-engine.cjs.js",
+  "module": "dist/chess-engine.esm.js",
+  "browser": "dist/embed.js",
+  "files": ["dist/"],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node tests/engine.test.js"
+  },
+  "dependencies": {
+    "chess.js": "^1.0.0-beta.8"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0",
+    "terser": "^5.30.0"
+  },
+  "keywords": ["chess", "stockfish", "chessground", "brindaworld", "education", "girls"],
+  "author": "Simonova Inc.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/simonova/brindaworld"
+  }
+}

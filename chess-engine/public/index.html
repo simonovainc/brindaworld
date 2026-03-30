@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrindaWorld Chess — Play Against AI</title>
+  <meta name="description" content="Play chess against an age-adaptive AI. Powered by Stockfish. Part of BrindaWorld — empowering girls 6-14.">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #fff0f5; min-height: 100vh; }
+    .header { background: linear-gradient(135deg, #d63384, #7b2ff7); padding: 1.5rem; text-align: center; }
+    .header h1 { color: white; font-size: 1.5rem; font-weight: 800; }
+    .header p { color: rgba(255,255,255,0.85); font-size: 0.9rem; margin-top: 0.25rem; }
+    .chess-container { max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+    .embed-section { max-width: 700px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 16px; border: 1px solid #f0c0d8; }
+    .embed-section h2 { color: #2d1b69; font-size: 1.2rem; margin-bottom: 1rem; }
+    .embed-section pre { background: #2d1b69; color: #f0c0d8; padding: 1rem; border-radius: 8px; font-size: 0.82rem; overflow-x: auto; white-space: pre-wrap; }
+    .embed-section code { font-family: 'Fira Code', monospace; }
+    .footer { text-align: center; padding: 2rem; color: #888; font-size: 0.82rem; }
+    .footer a { color: #d63384; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>BrindaWorld Chess</h1>
+    <p>Play against an age-adaptive AI powered by Stockfish</p>
+  </div>
+
+  <div class="chess-container" id="chess-board"></div>
+
+  <div class="embed-section">
+    <h2>Embed on Your Website</h2>
+    <pre><code>&lt;div id="chess"&gt;&lt;/div&gt;
+&lt;script src="https://brindaworld.ca/chess/embed.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  BrindaChess.init('#chess', {
+    age: 10,
+    theme: 'brindaworld'
+  });
+&lt;/script&gt;</code></pre>
+  </div>
+
+  <div class="footer">
+    <p><a href="https://brindaworld.ca">BrindaWorld</a> — She Can Be Anything</p>
+    <p>Simonova Inc. | New Brunswick, Canada</p>
+  </div>
+
+  <script type="module">
+    // Load BrindaChess — in dev mode from src, in production from embed.js
+    try {
+      const { BrindaChess } = await import('./embed.js');
+      BrindaChess.init('#chess-board', { age: 10, theme: 'brindaworld', showTips: true });
+    } catch (e) {
+      // Fallback: try loading from src directly (dev mode)
+      try {
+        const mod = await import('../src/BrindaChess.js');
+        mod.BrindaChess.init('#chess-board', { age: 10, theme: 'brindaworld', showTips: true });
+      } catch (e2) {
+        document.getElementById('chess-board').innerHTML =
+          '<p style="text-align:center;color:#d63384;padding:2rem;">Chess engine loading... Run <code>npm run build</code> first.</p>';
+      }
+    }
+  </script>
+</body>
+</html>
